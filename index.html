@@ -1,0 +1,147 @@
+<html>
+<title>Firebase Messaging Demo</title>
+<style>
+    div {
+        margin-bottom: 15px;
+    }
+</style>
+<body>
+    <p>Push Messaging</p>
+    <div id="token"></div>
+    <div id="msg"></div>
+    <div id="notis"></div>
+    <div id="err"></div>
+    <!-- The core Firebase JS SDK is always required and must be listed first  -->
+    <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-app.js"></script>
+       
+    <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-analytics.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.17.1/firebase-messaging.js"></script> 
+    <script src="../js/jquery-3.2.1.min.js"></script>
+    <script>
+  
+        MsgElem = document.getElementById("msg");
+        TokenElem = document.getElementById("token");
+        NotisElem = document.getElementById("notis");
+        ErrElem = document.getElementById("err");
+          
+        function resetStorage()
+        {
+            localStorage.setItem("FCM_Token", "");
+        }
+
+        function sendtoServer(token)
+        {
+            
+            let tokenStatus = localStorage.getItem("FCM_Token");
+            console.log('sendtoserver' + token + tokenStatus);
+            if ((tokenStatus == "" || tokenStatus != "1" || tokenStatus == null))
+            {
+                let token = 'eqePmDZlE5NnDZNkcT57ch:APA91bE5F3YNvsjF-bsep4hIIlyBvRgkD8Dt2jD9EeFgGAnxn-JXxIlxqkS9i_OQRtWjxPNVtStbFOH7AAf-o3X-Qdd4LSTlDlQO_OdaN00XYw_HUvttYM2cw_EWlNyFRCmmsVMdX2Z2';
+                $.ajax({
+                    type: "POST",
+                    url: "server/TokenReceive.aspx/procRequest",
+                    data: '{"FCMtoken": "' + token + '"}',
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        console.log(response);
+                        localStorage.setItem("FCM_Token", 1);
+                    }
+                });
+            }
+            
+        }
+        resetStorage();
+        sendtoServer('');
+        
+        var firebaseConfig = {
+            apiKey: "apiKey",
+            authDomain: "mydomain.firebaseapp.com",
+            databaseURL: "https://myproject.firebaseio.com",
+            projectId: "zupushnotif",
+            storageBucket: "zupushnotif.appspot.com",
+            messagingSenderId: "messagingSenderId",
+            appId: "x:xxxxxxxxxx:web:xxxxxxxxxxxxxxxxx",
+            measurementId: "G-xxxxxxxxxxxxxxx"
+        };
+        var messaging;
+        //navigator.serviceWorker.register('/apps/eclc/zu-push-notifications/firebase-messaging-sw.js')
+        navigator.serviceWorker.register('/zu-push-notifications/firebase-messaging-sw.js')
+        .then((registration) => {
+
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            // firebase.analytics();
+
+            messaging = firebase.messaging();
+            messaging.useServiceWorker(registration);
+
+            messaging
+            .requestPermission()
+            .then(function () {
+                MsgElem.innerHTML = "Notification permission granted." 
+                console.log("Notification permission granted.");
+                
+                // get the token in the form of promise
+                return messaging.getToken()
+            })
+            .then(function(token) {
+                TokenElem.innerHTML = "token is : " + token;
+                sendtoServer(token);
+   
+            })
+            .catch(function (err) {
+                ErrElem.innerHTML = ErrElem.innerHTML + "; " + err;
+                console.log("Unable to get permission to notify.", err);
+            });
+
+
+
+            // Callback fired if Instance ID token is updated.
+            messaging.onTokenRefresh(function () {
+                messaging.getToken()
+                .then(function (refreshedToken) {
+                    console.log('Token refreshed.');
+                    // Indicate that the new Instance ID token has not yet been sent to the
+                    // app server.
+                    resetStorage();
+                    // Send Instance ID token to app server.
+                    sendtoServer(refreshedToken);
+                    
+                })
+                .catch(function (err) {
+                    console.log('Unable to retrieve refreshed token ', err);
+                    
+                });
+            });
+        });
+        let enableForegroundNotification = true;
+        messaging = firebase.messaging();
+        messaging.onMessage(function(payload) {
+            console.log("Message received. ", payload);
+            NotisElem.innerHTML = NotisElem.innerHTML + JSON.stringify(payload);
+
+            if(enableForegroundNotification) {
+                //console.log(payload.data);
+                //const {title, options} = JSON.parse(payload.data.notification);
+
+                const title = payload.notification.title; //"Background Message Title";
+                const options = {
+                    body: payload.notification.body,
+                    icon: payload.notification.image,
+                    click_action: payload.notification.click_action,
+                    data : payload.notification.click_action
+                };
+                // data: payload.data.url
+                navigator.serviceWorker.getRegistrations().then(registration => {
+                    registration[0].showNotification(title, options);
+                });
+            }
+        });
+     </script>
+
+
+
+</body>
+
+</html>

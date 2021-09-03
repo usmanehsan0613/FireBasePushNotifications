@@ -1,0 +1,5 @@
+- Setup a new push-notification-project in firebase console and get all API credentials. 
+- update the firebase credentials in server/TokenReceive.aspx and index.html
+- First register the user's token to server - server will save in DB (index.html) && (server/TokenReceive.aspx)
+- Setup a service worker that will sit in user browser and listen for any push notification
+- An admin section that will read all the token entries in DB and start sending push notifications to all users. 

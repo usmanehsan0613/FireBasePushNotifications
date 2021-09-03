@@ -1,1 +1,145 @@
+﻿<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>Push Notifications</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="../../css/bootstrap.min.css" type="text/css"/>
+               <style>
+                   body{ overflow-x: hidden;}
+               </style>
+    </head>
+    <body>
+        <div class="clear">&nbsp;</div>
+        <div class="clear">&nbsp;</div>
+        <div class="col-lg-12">
+         <form class="form-horizontal" action="#" role="" id="frm">
+              <h2 class="text-center">Push Notifications </h2>
+              <div class="form-group">
+              <label class="control-label col-sm-2" for="email">Title</label>
+              <div class="col-sm-10">
+                  <input required="" type="text" class="form-control" id="title" placeholder="Enter title" value="welcome to Zayed University">
+              </div>
+            </div>
+             
+             <div class="form-group">
+              <label class="control-label col-sm-2" for="email">Image URL</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="img_url" placeholder="https://www.zu.ac.ae/main/files/images/pushLogo.png" value="https://www.zu.ac.ae/main/files/images/pushLogo.png">
+              </div>
+            </div>
+             
+               <div class="form-group">
+              <label class="control-label col-sm-2" for="email">Redirection URL</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="redirectUrl" placeholder="e.g https://www.zu.ac.ae" value="https://www.zu.ac.ae">
+              </div>
+            </div>
+             
+            <div class="form-group">
+              <label class="control-label col-sm-2" for="pwd">Message</label>
+              <div class="col-sm-10">
+                <textarea type="text" class="form-control" id="message" placeholder="Body Message">To know more about ZU, Please visit our website.</textarea>
+              </div>
+            </div>
+             
+               <div class="form-group">
+              <label class="control-label col-sm-2" for="email">Consumer KEY</label>
+              <div class="col-sm-10">
+                <input type="text" class="form-control" id="key" placeholder="e.g XXXXXXXXXXX">
+              </div>
+            </div>
 
+           
+
+             <div class="form-group" id="error">
+              <label class="control-label col-sm-2" for="email"></label>
+              <div class="col-sm-10">
+                  <label class="error" style="color: red;" id="error-info"></label>
+              </div>
+            </div>
+            <div class="form-group">
+              <div class="col-sm-offset-2 col-sm-10">
+                  <button type="button" id="submit" class="btn btn-default">Submit</button>
+              </div>
+            </div>
+        </form>
+            </div>
+
+
+        <script src="../../js/jquery-3.2.1.min.js"></script>
+        <script src="../../js/bootstrap.min.js"></script>
+
+        <script>
+
+
+        $('#submit').click(function(){
+             // admin client
+            let obj = {};
+            obj.title = $('#title').val();
+            obj.img_url = $('#img_url').val();
+            obj.redirect_url = $('#redirectUrl').val();
+            obj.message = $('#message').val();
+            obj.key = $('#key').val();
+
+            if (obj.title == "") {
+                $('#error-info').html("Please enter the title");
+                return;
+            }
+
+            if (obj.message == "") {
+                $('#error-info').html("Please enter the message");
+                return;
+            }
+
+            if (obj.key == "") {
+                $('#error-info').html("Please enter the key");
+                return;
+            }
+
+            console.log(obj);
+            try{
+                $.ajax({
+                    type: "POST",
+                    url: "http://your_remote_url/api/SendNotification?code="+obj.key,   //"index.aspx/procFrm",
+                    // data: '{firstName: ' + JSON.stringify(firstName) + ', LastName: ' + JSON.stringify(LastName) + ', Email: ' + JSON.stringify(Email) + ', zuid: ' + JSON.stringify(zuid) + ', venue: ' + JSON.stringify(venue) + ', captcha: ' + JSON.stringify(captcha) + '}',
+                    data: JSON.stringify(obj),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        console.log(response);
+                        // localStorage.setItem("FCM_Token",1);
+                        return;
+                    }, error: function (jqXHR, exception) {
+                        // Your error handling logic here..
+                        if (jqXHR.status != 200) {
+                            $('#error-info').html("Error: Ooppsss ! something went wrong. Please try with valid key or re-check your credentials.");
+                            console.log(jqXHR);
+                        }
+                        return;
+                    }
+                });
+
+                $('#submit').remove();
+                $('#error-info').html("Service has started in backgound....Please wait once the messages have been sent to all users.");
+
+            }
+            catch (err) {
+                $('#error-info').html("Err: Ooppsss ! something went wrong. Please try with valid key or re-check your credentials.");
+                return;
+            }
+            
+         });
+
+       
+
+        </script>
+
+        </body>
+   
+</html>
